@@ -1,0 +1,23 @@
+# Never commit raw data or anything that could carry identifiers
+*.csv
+*.tsv
+*.parquet
+data/
+synthea*/
+
+# Secrets / local config
+.env
+*.local
+*.cnf
+credentials*
+
+# Logs / dumps
+*.log
+*.sql.gz
+*.dump
+
+# OS / editor cruft
+.DS_Store
+.idea/
+.vscode/
+*.swp
