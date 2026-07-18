@@ -43,14 +43,30 @@ imaging_studies, supplies.
 ## Prerequisites
 - PostgreSQL 16 running locally (`brew services start postgresql@16`), database
   `patienthealthdms` with the `pgcrypto` extension enabled.
-- Synthea CSV sample unzipped locally (default `~/Downloads/synthea_sample_data_csv_latest`).
+- Synthea CSV sample unzipped into `./synthea_sample_data_csv_latest` next to this
+  repo (gitignored — never committed). Override with `CSV_DIR` if it lives elsewhere.
 
 ## How to run
 ```bash
-# Point at your CSV folder if different from the default:
-export CSV_DIR="$HOME/Downloads/synthea_sample_data_csv_latest"
+# Only needed if your CSVs aren't at ./synthea_sample_data_csv_latest:
+export CSV_DIR="/path/to/synthea_sample_data_csv_latest"
 
-./run.sh                 # run every sql/ file in order (full pipeline)
+./run.sh                        # run every sql/NN_*.sql file in order (full pipeline)
 ./run.sh sql/01_bronze_ddl.sql   # or run a single stage
 ```
+
+Once bronze is loaded (`./run.sh sql/03_load_bronze.sql`, needed once per fresh load
+since `\copy` can't run inside a stored procedure), the rest of the pipeline —
+pre-DQ, crosswalk, de-identification, post-DQ, gold — can be re-run in one call:
+```sql
+CALL control.sp_pipeline_run_all('<any-salt-string>');
+```
+This aborts with an exception if either DQ gate fails (see `control.dq_results` for
+the failing check). Inspect results with:
+```sql
+SELECT * FROM control.pipeline_run_log ORDER BY run_id DESC;
+SELECT * FROM control.deid_audit ORDER BY audit_id DESC;
+SELECT * FROM gold.patient_summary LIMIT 10;
+```
+
 See `sql/` for the per-layer scripts and `CLAUDE.md` for build conventions.
