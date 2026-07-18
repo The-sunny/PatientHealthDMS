@@ -9,7 +9,7 @@
 #   PGHOST   (default: 127.0.0.1)
 #   PGUSER   (default: current unix user, trust auth)
 #   PGDATABASE (default: patienthealthdms)
-#   CSV_DIR  (default: ~/Downloads/synthea_sample_data_csv_latest)
+#   CSV_DIR  (default: ./synthea_sample_data_csv_latest next to this script)
 #
 # The placeholder __CSV_DIR__ in any .sql file (used by \copy statements) is
 # substituted with $CSV_DIR at run time, so raw CSV paths never live in the
@@ -19,8 +19,8 @@ set -euo pipefail
 export PATH="/opt/homebrew/opt/postgresql@16/bin:$PATH"
 export PGHOST="${PGHOST:-127.0.0.1}"
 export PGDATABASE="${PGDATABASE:-patienthealthdms}"
-CSV_DIR="${CSV_DIR:-$HOME/Downloads/synthea_sample_data_csv_latest}"
 SQL_DIR="$(cd "$(dirname "$0")" && pwd)/sql"
+CSV_DIR="${CSV_DIR:-$(dirname "$SQL_DIR")/synthea_sample_data_csv_latest}"
 
 run_file() {
   local f="$1"

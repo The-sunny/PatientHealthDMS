@@ -13,8 +13,9 @@ procedures** with a control/audit trail. Portfolio project; no cloud, no real PH
   as local user `sunny` (trust auth, no password).
 - Extension: `pgcrypto` (enabled) — provides `gen_random_uuid()` and `digest()`
   for tokenization.
-- Raw CSVs: `~/Downloads/synthea_sample_data_csv_latest/` (18 files; we use 12).
-  **Never commit CSVs** — `run.sh` substitutes the path placeholder `__CSV_DIR__`.
+- Raw CSVs: `./synthea_sample_data_csv_latest/` at the repo root (18 files; we
+  use 12), gitignored (`synthea*/`). **Never commit CSVs** — `run.sh`
+  substitutes the path placeholder `__CSV_DIR__`.
 - MySQL 9.2 is also installed/running locally from an earlier iteration of this
   project but is **not used** — this project is Postgres-only now.
 
