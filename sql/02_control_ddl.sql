@@ -4,7 +4,16 @@
 -- deid_audit). These are the assets that would be access-restricted
 -- (dedicated role + REVOKE) in a real deployment.
 
+-- Drop order matters: dq_results/deid_audit FK-reference pipeline_run_log,
+-- so they must be dropped before it on a re-run (DROP TABLE IF EXISTS has no
+-- CASCADE here, by design -- an accidental CASCADE on a re-run is a worse
+-- failure mode than a clear FK-dependency error).
+DROP TABLE IF EXISTS control.dq_results;
+DROP TABLE IF EXISTS control.deid_audit;
+DROP TABLE IF EXISTS control.pipeline_run_log;
 DROP TABLE IF EXISTS control.patient_crosswalk;
+DROP TABLE IF EXISTS control.token_vault;
+
 CREATE TABLE control.patient_crosswalk (
     original_patient_id    UUID NOT NULL UNIQUE,
     surrogate_id           UUID NOT NULL DEFAULT gen_random_uuid(),
@@ -13,7 +22,6 @@ CREATE TABLE control.patient_crosswalk (
     PRIMARY KEY (original_patient_id)
 );
 
-DROP TABLE IF EXISTS control.token_vault;
 CREATE TABLE control.token_vault (
     token_hash             TEXT PRIMARY KEY,
     identifier_type        TEXT NOT NULL CHECK (identifier_type IN ('NAME','SSN','DRIVERS','PASSPORT','UDI')),
@@ -22,7 +30,6 @@ CREATE TABLE control.token_vault (
     created_at             TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-DROP TABLE IF EXISTS control.pipeline_run_log;
 CREATE TABLE control.pipeline_run_log (
     run_id                 BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     run_type               TEXT NOT NULL CHECK (run_type IN ('LOAD','PRE_DQ','DEID','POST_DQ','GOLD')),
@@ -33,7 +40,6 @@ CREATE TABLE control.pipeline_run_log (
     notes                  TEXT
 );
 
-DROP TABLE IF EXISTS control.dq_results;
 CREATE TABLE control.dq_results (
     dq_id                  BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     run_id                 BIGINT NOT NULL REFERENCES control.pipeline_run_log(run_id),
@@ -48,7 +54,6 @@ CREATE TABLE control.dq_results (
     detail                 TEXT
 );
 
-DROP TABLE IF EXISTS control.deid_audit;
 CREATE TABLE control.deid_audit (
     audit_id               BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     run_id                 BIGINT NOT NULL REFERENCES control.pipeline_run_log(run_id),
